@@ -1,0 +1,21 @@
+[build]
+command = "pip install -r requirements.txt"
+publish = "."
+
+[build.environment]
+PYTHON_VERSION = "3.9"
+
+[[redirects]]
+from = "/*"
+to = "/app.py"
+status = 200
+
+[functions]
+directory = "functions"
+
+[dev]
+framework = "streamlit"
+targetPort = 8501
+
+[build.processing]
+skip_processing = false

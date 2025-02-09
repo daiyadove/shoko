@@ -7,7 +7,11 @@ import os
 load_dotenv()
 
 # OpenAI クライアントの初期化
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key and 'OPENAI_API_KEY' in st.secrets:
+    api_key = st.secrets['OPENAI_API_KEY']
+
+client = OpenAI(api_key=api_key)
 
 def generate_html_game(prompt: str) -> str:
     """
@@ -140,8 +144,12 @@ def main():
     st.title("🎮 ゲームコンテンツジェネレーター")
     
     # APIキーチェック
-    if not os.getenv("OPENAI_API_KEY"):
-        st.error("OpenAI APIキーが設定されていません。.envファイルにOPENAI_API_KEYを設定してください。")
+    if not api_key:
+        st.error("""
+        OpenAI APIキーが設定されていません。以下のいずれかの方法で設定してください：
+        1. ローカル開発: .envファイルにOPENAI_API_KEYを設定
+        2. Netlifyデプロイ: Netlify環境変数にOPENAI_API_KEYを設定
+        """)
         return
     
     # タブの作成
