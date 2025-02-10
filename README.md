@@ -40,16 +40,79 @@ OPENAI_API_KEY=your-api-key-here
 streamlit run app.py
 ```
 
-## Netlifyへのデプロイ
+## Google Cloud Runへのデプロイ
 
-1. GitHubリポジトリの作成とプッシュ
+1. 前提条件:
+- Google Cloud CLIのインストール
+- プロジェクトの作成と設定
+```bash
+# Google Cloud CLIのインストール（まだの場合）
+curl https://sdk.cloud.google.com | bash
+gcloud init
 
-2. Netlifyでの設定:
-   - リポジトリを連携
-   - 環境変数`OPENAI_API_KEY`を設定
-   - デプロイ設定は`netlify.toml`で定義済み
+# プロジェクトの設定
+gcloud config set project [YOUR_PROJECT_ID]
+```
 
-3. デプロイ完了後、提供されたURLでアプリケーションにアクセス可能
+2. 必要なAPIと権限の設定:
+```bash
+# 必要なAPIの有効化
+gcloud services enable cloudbuild.googleapis.com
+gcloud services enable artifactregistry.googleapis.com
+gcloud services enable run.googleapis.com
+
+# Cloud Build Service Accountに必要な権限を付与
+PROJECT_NUMBER=$(gcloud projects describe $GOOGLE_CLOUD_PROJECT --format='value(projectNumber)')
+PROJECT_ID=$(gcloud config get-value project)
+
+# Cloud Build Service Accountに権限を付与
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:$PROJECT_NUMBER@cloudbuild.gserviceaccount.com" \
+    --role="roles/run.admin"
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:$PROJECT_NUMBER@cloudbuild.gserviceaccount.com" \
+    --role="roles/artifactregistry.admin"
+
+# Service Account User権限を付与
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:$PROJECT_NUMBER@cloudbuild.gserviceaccount.com" \
+    --role="roles/iam.serviceAccountUser"
+```
+
+3. Dockerイメージのビルドとプッシュ:
+```bash
+# Artifact Registryリポジトリの作成
+gcloud artifacts repositories create game-generator \
+    --repository-format=docker \
+    --location=asia-northeast1 \
+    --description="Game Generator Container Repository"
+
+# Dockerイメージのビルドとプッシュ
+gcloud builds submit --tag asia-northeast1-docker.pkg.dev/$PROJECT_ID/game-generator/app:latest
+```
+
+3. Cloud Runへのデプロイ:
+```bash
+gcloud run deploy game-generator \
+  --image asia-northeast1-docker.pkg.dev/[PROJECT_ID]/game-generator/app:latest \
+  --platform managed \
+  --region asia-northeast1 \
+  --allow-unauthenticated \
+  --set-env-vars "OPENAI_API_KEY=[YOUR_API_KEY]"
+```
+
+4. デプロイの確認:
+- 提供されたURLでアプリケーションにアクセス
+- ログの確認:
+```bash
+gcloud run services logs read game-generator
+```
+
+5. トラブルシューティング:
+- Cloud Runのログでエラーを確認
+- 環境変数が正しく設定されているか確認
+- コンテナのヘルスチェック状態を確認
 
 ## 技術スタック
 
