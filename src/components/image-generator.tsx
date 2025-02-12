@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -23,6 +23,26 @@ export function ImageGenerator() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [style, setStyle] = useState<ImageStyle>('realistic_image');
+  const [isCooldown, setIsCooldown] = useState(false);
+  const [cooldownTime, setCooldownTime] = useState(0);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isCooldown && cooldownTime > 0) {
+      timer = setInterval(() => {
+        setCooldownTime((prev) => {
+          if (prev <= 1) {
+            setIsCooldown(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [isCooldown, cooldownTime]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +55,8 @@ export function ImageGenerator() {
       const url = await generateImage({ prompt: prompt.trim(), style });
       if (url) {
         setImageUrl(url);
+        setIsCooldown(true);
+        setCooldownTime(30);
       }
     } catch (err) {
       setError('画像の生成に失敗しました。もう一度お試しください。');
@@ -70,8 +92,8 @@ export function ImageGenerator() {
           </SelectContent>
         </Select>
       </div>
-      <Button type="submit" disabled={loading || !prompt.trim()}>
-        {loading ? '生成中...' : '画像を生成'}
+      <Button type="submit" disabled={loading || !prompt.trim() || isCooldown}>
+        {loading ? '生成中...' : isCooldown ? `クールダウン中 (${cooldownTime}秒)` : '画像を生成'}
       </Button>
       {error && <p className="text-red-500 text-sm">{error}</p>}
       {imageUrl !== null && (

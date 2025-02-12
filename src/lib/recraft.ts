@@ -26,7 +26,6 @@ export async function generateImage({ prompt, style }: GenerateImageParams) {
       style,
       n: 1,
       response_format: 'url',
-      model: 'recraftv2'
     });
 
     return response.data.data[0].url;
