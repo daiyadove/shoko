@@ -29,8 +29,28 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Netlifyでデプロイする
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+このNext.jsアプリケーションをNetlifyにデプロイする手順:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. GitHubにリポジトリをプッシュ
+2. Netlifyでアカウントを作成し、「New site from Git」を選択
+3. GitHubリポジトリを選択
+4. ビルド設定は自動的に`netlify.toml`から読み込まれます
+
+### 環境変数の設定
+
+以下の環境変数をNetlifyのサイト設定で設定してください:
+
+```
+GEMINI_API_KEY=your_gemini_api_key
+ANTHROPIC_API_KEY=your_anthropic_api_key
+RECRAFT_API_KEY=your_recraft_api_key
+```
+
+設定手順:
+1. Netlifyダッシュボードでサイトを選択
+2. Site settings > Build & deploy > Environment variables
+3. 上記の環境変数を追加
+
+これらの環境変数は`.env.example`を参考にしてください。
