@@ -10,19 +10,23 @@ const getRecraftClient = () => {
   });
 };
 
+export type ImageStyle = 'realistic_image' | 'digital_illustration' | 'vector_illustration' | 'icon';
+
 export interface GenerateImageParams {
   prompt: string;
+  style: ImageStyle;
 }
 
-export async function generateImage({ prompt }: GenerateImageParams) {
+export async function generateImage({ prompt, style }: GenerateImageParams) {
   try {
     const client = getRecraftClient();
     const response = await client.post('/images/generations', {
       prompt,
       size: '1024x1024',
-      style: 'realistic_image',
+      style,
       n: 1,
       response_format: 'url',
+      model: 'recraftv2'
     });
 
     return response.data.data[0].url;
