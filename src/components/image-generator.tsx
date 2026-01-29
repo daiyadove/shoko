@@ -56,7 +56,7 @@ export function ImageGenerator() {
       if (url) {
         setImageUrl(url);
         setIsCooldown(true);
-        setCooldownTime(10);
+        setCooldownTime(30);
       }
     } catch (err) {
       setError('画像の生成に失敗しました。もう一度お試しください。');
