@@ -1,27 +1,32 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
-
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
 }
 
 export class ChatSession {
-  private chat;
+  private history: ChatMessage[] = [];
 
-  constructor() {
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-    this.chat = model.startChat({
-      history: [],
-    });
-  }
-
-  async sendMessage(message: string) {
+  async sendMessage(message: string): Promise<string> {
     try {
-      const result = await this.chat.sendMessage(message);
-      const response = await result.response;
-      return response.text();
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message,
+          history: this.history,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+
+      const data = await response.json();
+
+      this.history.push({ role: 'user', content: message });
+      this.history.push({ role: 'assistant', content: data.response });
+
+      return data.response;
     } catch (error) {
       console.error('Error sending message:', error);
       throw error;
