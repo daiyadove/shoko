@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -8,12 +8,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { generateImage, ImageStyle } from '@/lib/recraft';
+import { generateImage, ImageStyle } from '@/lib/gemini-image';
 
 const STYLE_OPTIONS: { value: ImageStyle; label: string }[] = [
-  { value: 'realistic_image', label: 'リアル' },
+  { value: 'realistic', label: 'リアル' },
   { value: 'digital_illustration', label: 'デジタルイラスト' },
-  { value: 'vector_illustration', label: 'ベクターイラスト' },
+  { value: 'vector', label: 'ベクターイラスト' },
   { value: 'icon', label: 'アイコン' },
 ];
 
@@ -22,7 +22,7 @@ export function ImageGenerator() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [style, setStyle] = useState<ImageStyle>('realistic_image');
+  const [style, setStyle] = useState<ImageStyle>('realistic');
   const [isCooldown, setIsCooldown] = useState(false);
   const [cooldownTime, setCooldownTime] = useState(0);
 
@@ -56,7 +56,7 @@ export function ImageGenerator() {
       if (url) {
         setImageUrl(url);
         setIsCooldown(true);
-        setCooldownTime(30);
+        setCooldownTime(10);
       }
     } catch (err) {
       setError('画像の生成に失敗しました。もう一度お試しください。');
@@ -69,11 +69,12 @@ export function ImageGenerator() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-4">
-        <Input
+        <Textarea
           placeholder="画像の説明を入力してください"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           disabled={loading}
+          rows={3}
         />
         <Select
           value={style}
